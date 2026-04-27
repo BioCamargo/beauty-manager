@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/salons")
-public class SalonController {
+public class SalonController extends BaseController {
 
     private final SalonService service;
 
@@ -17,8 +17,12 @@ public class SalonController {
     }
 
     @PostMapping
-    public Salon criar(@RequestBody Salon salon) {
-        return service.criar(salon);
+    public Salon salvar(@RequestBody Salon salon) {
+        return service.salvar(salon, getStudioId());
     }
 
+    @GetMapping
+    public List<Salon> listar() {
+        return service.listar(getStudioId());
+    }
 }

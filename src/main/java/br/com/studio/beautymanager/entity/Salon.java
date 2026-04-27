@@ -25,11 +25,12 @@ public class Salon {
 
     private String cidade;
     
+    @Column(name = "studio_id")
     private Long studioId;
 
     @Column(name = "data_cadastro")
     private LocalDateTime dataCadastro;
-
+    
     private String plano;
 
 }

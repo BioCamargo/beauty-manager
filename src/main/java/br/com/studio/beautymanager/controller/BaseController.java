@@ -5,11 +5,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public abstract class BaseController {
 
     protected Long getStudioId() {
-        Object principal = SecurityContextHolder
+        return (Long) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
-
-        return (Long) principal;
     }
 }

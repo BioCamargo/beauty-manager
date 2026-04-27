@@ -26,7 +26,7 @@ public class SecurityConfig {
         this.jwtService = jwtService;
     }
 
-@Bean
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -35,21 +35,20 @@ public class SecurityConfig {
 
         http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> {}) // <-- ATIVA ISSO
             .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                "/auth/**",
-                "/login.html",
-                "/dashboard.html",
-                "/",
-                "/index.html",
-                "/**/*.css",
-                "/**/*.js",
-                "/**/*.jpg",
-                "/**/*.png"
-            ).permitAll()
-            .anyRequest().authenticated()
-        )
+                .requestMatchers(
+                    "/auth/**",
+                    "/login.html",
+                    "/dashboard.html",
+                    "/",
+                    "/index.html",
+                    "/**/*.css",
+                    "/**/*.js",
+                    "/**/*.jpg",
+                    "/**/*.png"
+                ).permitAll()
+                .anyRequest().authenticated()
+            )
             .addFilterBefore(new JwtFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -68,4 +67,5 @@ public class SecurityConfig {
         
         return source;
     }
+    
 }
