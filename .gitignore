@@ -1,0 +1,21 @@
+# Java
+target/
+*.log
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+
+# Env
+.env
+
+# Logs
+logs/
+
+# Node (se tiver frontend depois)
+node_modules/

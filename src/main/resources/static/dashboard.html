@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+      <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+      <meta charset="UTF-8">
+      <title>LUMORA</title>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+      <style>
+         body {
+         overflow: hidden;
+         }
+         .sidebar {
+         height: 100vh;
+         background: #000000;
+         color: white;
+         }
+         .sidebar a {
+         color: white;
+         text-decoration: none;
+         display: block;
+         padding: 12px;
+         }
+         .sidebar a:hover {
+         background: #32465a;
+         }
+         .content {
+         height: 100vh;
+         overflow: auto;
+         padding: 20px;
+         }
+      </style>
+   </head>
+   <body>
+      <div class="container-fluid">
+         <div class="row">
+            <!-- MENU -->
+            <div class="col-2 sidebar">
+               <!--<h4 class="p-3">LUMORA</h4>-->
+               <img src="Logo_LUMORA_menor.jpg" class="container-fluid"/>
+               <hr>
+               <a href="#" onclick="abrirAgenda()">📅 Agenda</a>
+               <a href="#" onclick="abrirClientes()">👤 Clientes</a>               
+               <a href="#" onclick="abrirProdutos()">📦 Produtos</a>
+               <a href="#" onclick="abrirServicos()">✂ Serviços</a>
+               <hr>
+               <a href="#" onclick="abrirFinanceiro()">💰 Financeiro</a>
+               <hr>
+               <a href="#" onclick="logout()">🚪 Sair</a>
+            </div>
+            <!-- CONTEÚDO -->
+            <div class="col-10 content">
+               <div id="conteudo">
+                  <h3>Bem vindo <span id="studio"></span> </h3 > 
+               </div>
+            </div>
+         </div>
+      </div>
+      <script>
+
+        const nomeEmpresa = localStorage.getItem("empresa");
+            if (nomeEmpresa) {
+                document.getElementById("studio").textContent = nomeEmpresa;
+            } else {
+                document.getElementById("studio").textContent = "Visitante";
+            }
+
+
+         function logout() {
+         
+             localStorage.removeItem("token")
+         
+             window.location.href = "/login.html"
+         
+         }
+         
+         function abrirAgenda() {
+         
+             document.getElementById("conteudo").innerHTML = `
+         <h3>Agenda</h3>
+         
+         <div id="calendar"></div>
+         `
+         
+             carregarCalendario()
+         
+         }
+         
+         function carregarCalendario() {
+         
+             const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = '/login.html';
+            }
+         
+             let calendarEl = document.getElementById('calendar')
+         
+             let calendar = new FullCalendar.Calendar(calendarEl, {
+         
+                 initialView: 'timeGridDay',
+         
+                 locale: 'pt-br',
+         
+                 slotMinTime: "08:00:00",
+                 slotMaxTime: "20:00:00",
+         
+                 headerToolbar: {
+                     left: 'prev,next today',
+                     center: 'title',
+                     right: 'timeGridDay,timeGridWeek'
+                 },
+         
+                 events: async function (fetchInfo, successCallback) {
+         
+                     let data = fetchInfo.startStr.split("T")[0]
+         
+                     let response = await fetch("/agendamentos/" + data, {
+         
+                         headers: {
+                             "Authorization": "Bearer " + token
+                         }
+         
+                     })
+         
+                     let dados = await response.json()
+         
+                     let eventos = dados.map(a => ({
+         
+                         title: "Cliente " + a.clienteId,
+                         start: a.data + "T" + a.hora
+         
+                     }))
+         
+                     successCallback(eventos)
+         
+                 },
+         
+                 dateClick: function (info) {
+         
+                     novoAgendamento(info.dateStr)
+         
+                 }
+         
+             })
+         
+             calendar.render()
+         
+         }
+         
+         function carregarCalendario() {
+         
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = '/login.html';
+            }
+         
+             let calendarEl = document.getElementById('calendar')
+         
+             let calendar = new FullCalendar.Calendar(calendarEl, {
+         
+                 initialView: 'timeGridDay',
+         
+                 locale: 'pt-br',
+         
+                 slotMinTime: "08:00:00",
+                 slotMaxTime: "20:00:00",
+         
+                 headerToolbar: {
+                     left: 'prev,next today',
+                     center: 'title',
+                     right: 'timeGridDay,timeGridWeek'
+                 },
+         
+                 events: async function (fetchInfo, successCallback) {
+         
+                     let data = fetchInfo.startStr.split("T")[0]
+         
+                     let response = await fetch("/agendamentos/" + data, {
+         
+                         headers: {
+                             "Authorization": "Bearer " + token
+                         }
+         
+                     })
+         
+                     let dados = await response.json()
+         
+                     let eventos = dados.map(a => ({
+         
+                         title: "Cliente " + a.clienteId,
+                         start: a.data + "T" + a.hora
+         
+                     }))
+         
+                     successCallback(eventos)
+         
+                 },
+         
+                 dateClick: function (info) {
+         
+                     novoAgendamento(info.dateStr)
+         
+                 }
+         
+             })
+         
+             calendar.render()
+         
+         }
+         
+         async function novoAgendamento(dataHora) {
+         
+             let cliente = prompt("ID Cliente")
+         
+             let servico = prompt("ID Serviço")
+         
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = '/login.html';
+            }
+         
+             let data = dataHora.split("T")[0]
+             let hora = dataHora.split("T")[1].substring(0, 5)
+         
+             await fetch("/agendamentos", {
+         
+                 method: "POST",
+         
+                 headers: {
+                     "Content-Type": "application/json",
+                     "Authorization": "Bearer " + token
+                 },
+         
+                 body: JSON.stringify({
+         
+                     data: data,
+                     hora: hora,
+                     clienteId: cliente,
+                     servicoId: servico
+         
+                 })
+         
+             })
+         
+             abrirAgenda()
+         
+         }
+         
+         async function carregarAgenda() {
+         
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+         
+             let hoje = new Date().toISOString().split("T")[0]
+         
+             let response = await fetch("/agendamentos/" + hoje, {
+         
+                 headers: {
+                     "Authorization": "Bearer " + token
+                 }
+         
+             })
+         
+             let dados = await response.json()
+         
+             let tabela = document.getElementById("agenda")
+         
+             tabela.innerHTML = ""
+         
+             dados.forEach(a => {
+         
+                 tabela.innerHTML += `
+         <tr>
+         <td>${a.hora}</td>
+         <td>${a.clienteId}</td>
+         <td>${a.servicoId}</td>
+         </tr>
+         `
+         
+             })
+         
+         }
+         
+         function abrirClientes() {
+         
+             document.getElementById("conteudo").innerHTML = `
+         
+         <h3>Clientes</h3>
+         
+         <button class="btn btn-primary mb-3" onclick="novoCliente()">
+         Novo Cliente
+         </button>
+         
+         <table class="table table-hover">
+         
+         <thead>
+         <tr data-bs-toggle="modal" data-bs-target="#detalhesModal"> 
+         <th>Nome</th>
+         <th>Telefone</th>
+         <th>Observações</th>      
+         </tr>
+         </thead>
+         
+         <tbody id="clientes"></tbody>
+         
+         </table>
+
+<!-- Modal Bootstrap -->
+<div class="modal fade" id="detalhesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body"> Conteúdo da linha... </div>
+        </div>
+    </div>
+</div>
+
+         `
+         
+             carregarClientes()
+         
+         }
+         
+         async function carregarClientes() {
+         
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+         
+             let response = await fetch("/clientes", {
+         
+                 headers: {
+                     "Authorization": "Bearer " + token
+                 }
+         
+             })
+         
+             let dados = await response.json()
+         
+             let tabela = document.getElementById("clientes")
+         
+             tabela.innerHTML = ""
+         
+             dados.forEach(c => {
+         
+                 tabela.innerHTML += `
+         <tr>
+         <td>${c.nome}</td>
+         <td>${c.telefone}</td>
+         <td>${c.observacoes}</td>
+
+         
+         </tr>
+         `
+         
+             })
+         
+         }
+         
+         async function novoCliente() {
+         
+             let nome = prompt("Nome")
+             let telefone = prompt("Telefone")
+             let observacoes = prompt("Observações")
+         
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = '/login.html';
+            }
+         
+             await fetch("/clientes", {
+         
+                 method: "POST",
+         
+                 headers: {
+                     "Content-Type": "application/json",
+                     "Authorization": "Bearer " + token
+                 },
+         
+                 body: JSON.stringify({
+         
+                     nome: nome,
+                     telefone: telefone,
+                     observacoes: observacoes
+         
+                 })
+         
+             })
+         
+             abrirClientes()
+         
+         }
+         
+         function abrirServicos() {
+         
+             document.getElementById("conteudo").innerHTML = `
+         
+         <h3>Serviços</h3>
+         
+         <button class="btn btn-primary mb-3" onclick="novoServico()">
+         Novo Serviço
+         </button>
+         
+         <table class="table">
+         
+         <thead>
+         <tr>
+         <th>Nome</th>
+         <th>Valor</th>
+         <th>Duração</th>
+         </tr>
+         </thead>
+         
+         <tbody id="servicos"></tbody>
+         
+         </table>
+         `
+         
+             carregarServicos()
+         
+         }
+         
+         async function carregarServicos() {
+         
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+         
+             let response = await fetch("/servicos", {
+         
+                 headers: {
+                     "Authorization": "Bearer " + token
+                 }
+         
+             })
+         
+             let dados = await response.json()
+         
+             let tabela = document.getElementById("servicos")
+         
+             tabela.innerHTML = ""
+         
+             dados.forEach(s => {
+         
+                 tabela.innerHTML += `
+         <tr>
+         <td>${s.nome}</td>
+         <td>R$ ${s.valor}</td>
+         <td>${s.duracao} min</td>
+         </tr>
+         `
+         
+             })
+         
+         }
+         
+         async function novoServico() {
+         
+             let nome = prompt("Nome do serviço")
+             let valor = prompt("Valor")
+             let duracao = prompt("Duração em minutos")
+         
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = '/login.html';
+            }
+         
+             await fetch("/servicos", {
+         
+                 method: "POST",
+         
+                 headers: {
+                     "Content-Type": "application/json",
+                     "Authorization": "Bearer " + token
+                 },
+         
+                 body: JSON.stringify({
+         
+                     nome: nome,
+                     valor: valor,
+                     duracao: duracao
+         
+                 })
+         
+             })
+         
+             abrirServicos()
+         
+         }
+         
+         function abrirFinanceiro() {
+         
+             document.getElementById("conteudo").innerHTML = `
+         <h3>Financeiro</h3>
+         <p>Em construção...</p>
+         `
+         
+         }
+         
+         function abrirProdutos() {
+         
+             document.getElementById("conteudo").innerHTML = `
+         <h3>Produtos</h3>
+         <p>Em construção...</p>
+         `
+         
+         }
+         
+      </script>
+   </body>
+</html>
