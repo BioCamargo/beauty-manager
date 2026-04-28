@@ -1,8 +1,8 @@
 package br.com.studio.beautymanager.controller;
 
-import br.com.studio.beautymanager.entity.Servico;
+import br.com.studio.beautymanager.entity.Produto;
 import br.com.studio.beautymanager.service.JwtService;
-import br.com.studio.beautymanager.service.ServicoService;
+import br.com.studio.beautymanager.service.ProdutoService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,31 +10,31 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/servicos")
-public class ServicoController {
+@RequestMapping("/produtos")
+public class ProdutoController {
 
-    private final ServicoService service;
+    private final ProdutoService service;
     private final JwtService jwtService;
 
-    public ServicoController(ServicoService service, JwtService jwtService) {
+    public ProdutoController(ProdutoService service, JwtService jwtService) {
         this.service = service;
         this.jwtService = jwtService;
     }
 
-    private Long getStudioId(String token) {
-        return jwtService.getStudioId(token);
+    private Long getStudioId(String authHeader) {
+        return jwtService.getStudioId(authHeader);
     }
 
     @PostMapping
     public ResponseEntity<?> salvar(@RequestHeader("Authorization") String token,
-                                   @RequestBody Servico servico) {
+                                   @RequestBody Produto produto) {
 
         Long studioId = getStudioId(token);
-        return ResponseEntity.ok(service.salvar(servico, studioId));
+        return ResponseEntity.ok(service.salvar(produto, studioId));
     }
 
     @GetMapping
-    public ResponseEntity<List<Servico>> listar(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<Produto>> listar(@RequestHeader("Authorization") String token) {
 
         Long studioId = getStudioId(token);
         return ResponseEntity.ok(service.listar(studioId));
@@ -42,9 +42,9 @@ public class ServicoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id,
-                                      @RequestBody Servico servico) {
+                                      @RequestBody Produto produto) {
 
-        return ResponseEntity.ok(service.atualizar(id, servico));
+        return ResponseEntity.ok(service.atualizar(id, produto));
     }
 
     @DeleteMapping("/{id}")

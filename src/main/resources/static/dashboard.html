@@ -66,16 +66,18 @@
             }
 
 
-         function logout() {
-         
-             localStorage.removeItem("token")
-         
-             window.location.href = "/login.html"
-         
+        function getToken() {
+            const token = localStorage.getItem('token');
+            if (!token) window.location.href = '/login.html';
+            return token;
+        }
+
+         function logout() {         
+             localStorage.removeItem("token")         
+             window.location.href = "/login.html"         
          }
          
-         function abrirAgenda() {
-         
+         function abrirAgenda() {         
              document.getElementById("conteudo").innerHTML = `
          <h3>Agenda</h3>
          
@@ -86,174 +88,92 @@
          
          }
          
-         function carregarCalendario() {
-         
-             const token = localStorage.getItem('token');
-
-            if (!token) {
+        function carregarCalendario() {
+            if (!getToken()) {
                 window.location.href = '/login.html';
             }
-         
-             let calendarEl = document.getElementById('calendar')
-         
-             let calendar = new FullCalendar.Calendar(calendarEl, {
-         
-                 initialView: 'timeGridDay',
-         
-                 locale: 'pt-br',
-         
-                 slotMinTime: "08:00:00",
-                 slotMaxTime: "20:00:00",
-         
-                 headerToolbar: {
-                     left: 'prev,next today',
-                     center: 'title',
-                     right: 'timeGridDay,timeGridWeek'
-                 },
-         
-                 events: async function (fetchInfo, successCallback) {
-         
-                     let data = fetchInfo.startStr.split("T")[0]
-         
-                     let response = await fetch("/agendamentos/" + data, {
-         
-                         headers: {
-                             "Authorization": "Bearer " + token
-                         }
-         
-                     })
-         
-                     let dados = await response.json()
-         
-                     let eventos = dados.map(a => ({
-         
-                         title: "Cliente " + a.clienteId,
-                         start: a.data + "T" + a.hora
-         
-                     }))
-         
-                     successCallback(eventos)
-         
-                 },
-         
-                 dateClick: function (info) {
-         
-                     novoAgendamento(info.dateStr)
-         
-                 }
-         
-             })
-         
-             calendar.render()
-         
-         }
-         
-         function carregarCalendario() {
-         
-            const token = localStorage.getItem('token');
 
-            if (!token) {
-                window.location.href = '/login.html';
-            }
-         
-             let calendarEl = document.getElementById('calendar')
-         
-             let calendar = new FullCalendar.Calendar(calendarEl, {
-         
-                 initialView: 'timeGridDay',
-         
-                 locale: 'pt-br',
-         
-                 slotMinTime: "08:00:00",
-                 slotMaxTime: "20:00:00",
-         
-                 headerToolbar: {
-                     left: 'prev,next today',
-                     center: 'title',
-                     right: 'timeGridDay,timeGridWeek'
-                 },
-         
-                 events: async function (fetchInfo, successCallback) {
-         
-                     let data = fetchInfo.startStr.split("T")[0]
-         
-                     let response = await fetch("/agendamentos/" + data, {
-         
-                         headers: {
-                             "Authorization": "Bearer " + token
-                         }
-         
-                     })
-         
-                     let dados = await response.json()
-         
-                     let eventos = dados.map(a => ({
-         
-                         title: "Cliente " + a.clienteId,
-                         start: a.data + "T" + a.hora
-         
-                     }))
-         
-                     successCallback(eventos)
-         
-                 },
-         
-                 dateClick: function (info) {
-         
-                     novoAgendamento(info.dateStr)
-         
-                 }
-         
-             })
-         
-             calendar.render()
-         
-         }
-         
-         async function novoAgendamento(dataHora) {
-         
-             let cliente = prompt("ID Cliente")
-         
-             let servico = prompt("ID Serviço")
-         
-            const token = localStorage.getItem('token');
+            let calendarEl = document.getElementById('calendar');
 
-            if (!token) {
-                window.location.href = '/login.html';
-            }
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+
+                initialView: 'timeGridDay',
+                locale: 'pt-br',
+
+                slotMinTime: "08:00:00",
+                slotMaxTime: "20:00:00",
+
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridDay,timeGridWeek'
+                },
+
+                events: async function (fetchInfo, successCallback) {
+
+                    let response = await fetch("/agenda", {
+                        headers: {
+                            "Authorization": "Bearer " + token
+                        }
+                    });
+
+                    let dados = await response.json();
+
+                    let eventos = dados.map(a => {
+
+                        let nomesServicos = a.servicos
+                            ?.map(s => s.nome || ("Serviço " + s.servicoId))
+                            .join(", ");
+
+                        return {
+                            title: a.clienteNome + " - " + nomesServicos,
+                            start: a.dataHora,
+                            end: a.dataHoraFim
+                        };
+                    });
+
+                    successCallback(eventos);
+                },
+
+                dateClick: function (info) {
+                    abrirModalAgendamento(info.dateStr);
+                }
+
+            });
+
+            calendar.render();
+    }
+
          
-             let data = dataHora.split("T")[0]
-             let hora = dataHora.split("T")[1].substring(0, 5)
-         
-             await fetch("/agendamentos", {
-         
-                 method: "POST",
-         
-                 headers: {
-                     "Content-Type": "application/json",
-                     "Authorization": "Bearer " + token
-                 },
-         
-                 body: JSON.stringify({
-         
-                     data: data,
-                     hora: hora,
-                     clienteId: cliente,
-                     servicoId: servico
-         
-                 })
-         
-             })
-         
-             abrirAgenda()
-         
-         }
+         async function abrirModalAgendamento(dataHora) {
+
+            const cliente = prompt("ID Cliente");
+            const servicos = prompt("IDs dos serviços (ex: 1,2,3)");
+
+            const listaServicos = servicos.split(",").map(id => ({
+                servicoId: parseInt(id.trim())
+            }));
+
+            //const token = localStorage.getItem('token');
+
+            await fetch("/agenda", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({
+                    dataHora: dataHora,
+                    clienteId: cliente,
+                    servicos: listaServicos
+                })
+            });
+
+            abrirAgenda();
+        }
          
          async function carregarAgenda() {
-         
-        const token = localStorage.getItem('token');
-
-        if (!token) {
+         if (!getToken()) {
             window.location.href = '/login.html';
         }
          
@@ -331,10 +251,8 @@
          }
          
          async function carregarClientes() {
-         
-        const token = localStorage.getItem('token');
 
-        if (!token) {
+        if (!getToken()) {
             window.location.href = '/login.html';
         }
          
@@ -374,9 +292,7 @@
              let telefone = prompt("Telefone")
              let observacoes = prompt("Observações")
          
-            const token = localStorage.getItem('token');
-
-            if (!token) {
+            if (!getToken()) {
                 window.location.href = '/login.html';
             }
          
@@ -434,7 +350,7 @@
          
          async function carregarServicos() {
          
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
 
         if (!token) {
             window.location.href = '/login.html';
@@ -474,9 +390,7 @@
              let valor = prompt("Valor")
              let duracao = prompt("Duração em minutos")
          
-            const token = localStorage.getItem('token');
-
-            if (!token) {
+            if (!getToken()) {
                 window.location.href = '/login.html';
             }
          

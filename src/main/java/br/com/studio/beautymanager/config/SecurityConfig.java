@@ -36,17 +36,8 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/auth/**",
-                    "/login.html",
-                    "/dashboard.html",
-                    "/",
-                    "/index.html",
-                    "/**/*.css",
-                    "/**/*.js",
-                    "/**/*.jpg",
-                    "/**/*.png"
-                ).permitAll()
+                .requestMatchers("/auth/**", "/dashboard.html", "/login.html", "/**.css", "/**.js", "/**.jpg")
+                .permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(new JwtFilter(jwtService), UsernamePasswordAuthenticationFilter.class);

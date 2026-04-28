@@ -2,6 +2,7 @@
 target/
 *.log
 *.class
+*.jar
 
 # IDE
 .idea/
@@ -19,3 +20,5 @@ logs/
 
 # Node (se tiver frontend depois)
 node_modules/
+.env
+.vscode/

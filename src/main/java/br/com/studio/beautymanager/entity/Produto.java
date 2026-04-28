@@ -3,15 +3,17 @@ package br.com.studio.beautymanager.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "salon")
+@Table(name = "produto")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Salon {
+public class Produto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,15 +21,15 @@ public class Salon {
 
     private String nome;
 
-    private String telefone;
+    private String descricao;
 
-    private String cidade;
+    private BigDecimal preco;
+
+    private Integer estoque;
 
     @Column(name = "studio_id")
     private Long studioId;
 
     @Column(name = "data_cadastro")
     private LocalDateTime dataCadastro;
-
-    private String plano;
 }

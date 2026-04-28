@@ -1,0 +1,49 @@
+<h3>Produtos</h3>
+
+<input id="nome" placeholder="Nome">
+<input id="preco" placeholder="Preço">
+<input id="estoque" placeholder="Estoque">
+
+<button onclick="salvar()">Salvar</button>
+
+<ul id="lista"></ul>
+
+<script>
+const token = localStorage.getItem("token");
+
+async function salvar() {
+    await fetch("/produtos", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            nome: document.getElementById("nome").value,
+            preco: document.getElementById("preco").value,
+            estoque: document.getElementById("estoque").value
+        })
+    });
+
+    listar();
+}
+
+async function listar() {
+    const res = await fetch("/produtos", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
+
+    const data = await res.json();
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    data.forEach(p => {
+        lista.innerHTML += `<li>${p.nome} - R$ ${p.preco} (${p.estoque})</li>`;
+    });
+}
+
+listar();
+</script>

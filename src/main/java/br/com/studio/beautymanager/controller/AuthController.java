@@ -50,7 +50,8 @@ public class AuthController {
             return ResponseEntity.status(401).body("Usuário ou senha inválidos");
         }
 
-        Studio empresa = studioRepository.findByStudioId(usuario.getStudioId());
+        Studio empresa = studioRepository.findById(usuario.getStudioId())
+        .orElseThrow(() -> new RuntimeException("Studio não encontrado"));
 
         String token = jwtService.gerarToken(usuario.getStudioId());
 

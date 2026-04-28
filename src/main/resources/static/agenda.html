@@ -1,79 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<meta charset="UTF-8">
-<title>Agenda</title>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-
+    <title>Agenda</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
 
-<div class="container mt-4">
+<h2>Agenda</h2>
 
-<h2>Agenda do dia</h2>
+<input type="text" id="cliente" placeholder="Cliente">
+<input type="text" id="servico" placeholder="Serviço">
+<input type="datetime-local" id="dataHora">
 
-<button onclick="carregarAgenda()" class="btn btn-primary">
-Carregar Agenda
-</button>
+<button onclick="salvar()">Salvar</button>
 
-<table class="table mt-3">
+<hr>
 
-<thead>
-
-<tr>
-<th>Hora</th>
-<th>Cliente</th>
-<th>Serviço</th>
-</tr>
-
-</thead>
-
-<tbody id="agenda">
-
-</tbody>
-
-</table>
-
-</div>
+<ul id="lista"></ul>
 
 <script>
 
-async function carregarAgenda(){
+const token = localStorage.getItem("token");
 
-let token = localStorage.getItem("token")
+async function salvar() {
+    await axios.post('/agenda', {
+        cliente: document.getElementById("cliente").value,
+        servico: document.getElementById("servico").value,
+        dataHora: document.getElementById("dataHora").value
+    }, {
+        headers: {
+            Authorization: 'Bearer ' + token
+        }
+    });
 
-let hoje = new Date().toISOString().split("T")[0]
-
-let response = await fetch("/agendamentos/"+hoje,{
-
-headers:{
-"Authorization":"Bearer "+token
+    listar();
 }
 
-})
+async function listar() {
+    const response = await axios.get('/agenda', {
+        headers: {
+            Authorization: 'Bearer ' + token
+        }
+    });
 
-let dados = await response.json()
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
 
-let tabela = document.getElementById("agenda")
-
-tabela.innerHTML=""
-
-dados.forEach(a=>{
-
-tabela.innerHTML+=`
-<tr>
-<td>${a.hora}</td>
-<td>${a.clienteId}</td>
-<td>${a.servicoId}</td>
-</tr>
-`
-
-})
-
+    response.data.forEach(a => {
+        const item = document.createElement("li");
+        item.innerText = a.cliente + " - " + a.servico + " - " + a.dataHora;
+        lista.appendChild(item);
+    });
 }
+
+listar();
 
 </script>
 

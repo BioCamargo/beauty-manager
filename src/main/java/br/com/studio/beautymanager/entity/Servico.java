@@ -1,24 +1,36 @@
 package br.com.studio.beautymanager.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "servico")
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Servico {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long studioId;
-
     private String nome;
 
-    private Double valor;
+    private String descricao;
 
-    private Integer duracaoMinutos;
+    private BigDecimal preco;
 
-    private Boolean ativo;
+    // duração em minutos (base da agenda)
+    private Integer duracao;
+
+    @Column(name = "studio_id")
+    private Long studioId;
+
+    @Column(name = "data_cadastro")
+    private LocalDateTime dataCadastro;
 }

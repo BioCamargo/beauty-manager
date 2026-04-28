@@ -1,0 +1,49 @@
+<h3>Serviços</h3>
+
+<input id="nome" placeholder="Nome">
+<input id="preco" placeholder="Preço">
+<input id="duracao" placeholder="Duração (minutos)">
+
+<button onclick="salvar()">Salvar</button>
+
+<ul id="lista"></ul>
+
+<script>
+const token = localStorage.getItem("token");
+
+async function salvar() {
+    await fetch("/servicos", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            nome: document.getElementById("nome").value,
+            preco: document.getElementById("preco").value,
+            duracao: document.getElementById("duracao").value
+        })
+    });
+
+    listar();
+}
+
+async function listar() {
+    const res = await fetch("/servicos", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
+
+    const data = await res.json();
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    data.forEach(s => {
+        lista.innerHTML += `<li>${s.nome} - R$ ${s.preco} (${s.duracao} min)</li>`;
+    });
+}
+
+listar();
+</script>

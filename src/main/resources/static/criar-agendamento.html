@@ -1,0 +1,29 @@
+<input type="datetime-local" id="dataHora">
+<select id="servico"></select>
+<button onclick="salvar()">Salvar</button>
+
+<script>
+async function salvar() {
+
+    const token = localStorage.getItem("token");
+
+    const response = await fetch("/agenda", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            dataHora: document.getElementById("dataHora").value,
+            servicoId: document.getElementById("servico").value
+        })
+    });
+
+    if (response.ok) {
+        alert("Agendado com sucesso");
+    } else {
+        const erro = await response.text();
+        alert(erro);
+    }
+}
+</script>

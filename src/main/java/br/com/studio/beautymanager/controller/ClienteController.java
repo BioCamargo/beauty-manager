@@ -1,10 +1,13 @@
 package br.com.studio.beautymanager.controller;
 
-import br.com.studio.beautymanager.dto.ApiResponse;
+import br.com.studio.beautymanager.dto.ClienteDTO;
 import br.com.studio.beautymanager.entity.Cliente;
+import br.com.studio.beautymanager.mapper.ClienteMapper;
 import br.com.studio.beautymanager.service.ClienteService;
-
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/clientes")
@@ -17,22 +20,22 @@ public class ClienteController extends BaseController {
     }
 
     @PostMapping
-    public ApiResponse<Cliente> salvar(@RequestBody Cliente cliente) {
-
+    public ClienteDTO salvar(@RequestBody ClienteDTO dto) {
+        Cliente cliente = ClienteMapper.toEntity(dto);
         Cliente salvo = service.salvar(cliente, getStudioId());
-
-        return ApiResponse.<Cliente>builder()
-                .sucesso(true)
-                .dados(salvo)
-                .build();
+        return ClienteMapper.toDTO(salvo);
     }
 
     @GetMapping
-    public String listar() {
-        Long studioId = getStudioId();
-
-        return "Studio logado: " + studioId;
+    public List<ClienteDTO> listar() {
+        return service.listar(getStudioId())
+                .stream()
+                .map(ClienteMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    
+    @DeleteMapping("/{id}")
+    public void excluir(@PathVariable Long id) {
+        service.excluir(id, getStudioId());
+    }
 }

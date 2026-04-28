@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clientes</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+
+<h2>Clientes</h2>
+
+<input type="text" id="nome" placeholder="Nome">
+<input type="text" id="telefone" placeholder="Telefone">
+<input type="email" id="email" placeholder="Email">
+
+<button onclick="salvar()">Salvar</button>
+
+<hr>
+
+<ul id="lista"></ul>
+
+<script>
+
+const token = localStorage.getItem("token");
+
+async function salvar() {
+    await axios.post('/clientes', {
+        nome: document.getElementById("nome").value,
+        telefone: document.getElementById("telefone").value,
+        email: document.getElementById("email").value
+    }, {
+        headers: {
+            Authorization: 'Bearer ' + token
+        }
+    });
+
+    listar();
+}
+
+async function listar() {
+    const response = await axios.get('/clientes', {
+        headers: {
+            Authorization: 'Bearer ' + token
+        }
+    });
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    response.data.forEach(c => {
+        const item = document.createElement("li");
+        item.innerText = c.nome + " - " + c.telefone;
+
+        const btn = document.createElement("button");
+        btn.innerText = "Excluir";
+        btn.onclick = () => excluir(c.id);
+
+        item.appendChild(btn);
+        lista.appendChild(item);
+    });
+}
+
+async function excluir(id) {
+    await axios.delete('/clientes/' + id, {
+        headers: {
+            Authorization: 'Bearer ' + token
+        }
+    });
+
+    listar();
+}
+
+listar();
+
+</script>
+
+</body>
+</html>
